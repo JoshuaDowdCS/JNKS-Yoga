@@ -1,0 +1,7 @@
+opencv-python
+fastapi
+uvicorn
+python-multipart
+websockets
+httpx
+google-genai

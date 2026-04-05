@@ -1,0 +1,112 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+
+interface AnalyzeButtonProps {
+  disabled: boolean;
+  inputType: "webcam" | "upload";
+  videoFile?: File | null;
+}
+
+export function AnalyzeButton({ disabled, inputType, videoFile }: AnalyzeButtonProps) {
+  const router = useRouter();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAnalyze = async () => {
+    setError(null);
+    setIsAnalyzing(true);
+    setStatus("Uploading video...");
+
+    try {
+      let file: File;
+
+      if (inputType === "upload" && videoFile) {
+        file = videoFile;
+      } else {
+        setError("No video available. Please upload a video first.");
+        setIsAnalyzing(false);
+        setStatus("");
+        return;
+      }
+
+      setStatus("Analyzing your yoga form...");
+
+      const formData = new FormData();
+      formData.append("video", file);
+
+      const res = await fetch(
+        `${API_URL}/api/analyze?input_type=${inputType}`,
+        { method: "POST", body: formData }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Analysis failed");
+      }
+
+      const result = await res.json();
+      sessionStorage.setItem("analysisResult", JSON.stringify(result));
+      router.push("/results");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setStatus("");
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setError(null);
+      }, 3000);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <Button
+        size="lg"
+        onClick={handleAnalyze}
+        disabled={disabled || isAnalyzing}
+        className="w-full max-w-xs px-6 py-3 text-sm font-semibold"
+      >
+        {isAnalyzing ? (
+          <span className="flex items-center gap-2">
+            <svg
+              className="h-4 w-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            {status || "Analyzing..."}
+          </span>
+        ) : (
+          "Analyze My Pose"
+        )}
+      </Button>
+      {isAnalyzing && (
+        <p className="text-xs text-muted-foreground animate-pulse">
+          Analyzing your yoga form with AI...
+        </p>
+      )}
+      {error && (
+        <p className="text-sm text-destructive text-center">{error}</p>
+      )}
+    </div>
+  );
+}
