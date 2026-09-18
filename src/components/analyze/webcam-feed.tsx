@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { useAccentColor } from "@/components/accent-color-provider";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface WebcamFeedProps {
   onReady: (ready: boolean) => void;

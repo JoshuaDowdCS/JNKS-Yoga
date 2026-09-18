@@ -3,7 +3,11 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8001";
+const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  (typeof window !== "undefined"
+    ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`
+    : "ws://localhost:8001");
 
 // Voice activity detection threshold (0-255 RMS)
 const VAD_THRESHOLD = 30;

@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+venv
+__pycache__
+*.pyc
+.env*
+.vercel
+output
+certs
